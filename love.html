@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>จดหมายกำลังใจ 💌</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Itim&display=swap" rel="stylesheet">
+
+<style>
+body{
+  margin:0;
+  font-family:'Itim', cursive;
+  background:#fff0f6;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+  overflow:hidden;
+}
+
+.container{
+  width:100%;
+  max-width:420px;
+  padding:20px;
+}
+
+.letter{
+  background:#ffe4ec;
+  border-radius:22px;
+  padding:25px;
+  text-align:center;
+  box-shadow:0 20px 40px rgba(0,0,0,.15);
+  animation:fade .6s ease;
+}
+
+@keyframes fade{
+  from{opacity:0;transform:translateY(40px)}
+  to{opacity:1;transform:none}
+}
+
+button{
+  width:100%;
+  margin:8px 0;
+  padding:12px;
+  border:none;
+  border-radius:999px;
+  background:#fb7185;
+  color:#fff;
+  font-size:16px;
+  cursor:pointer;
+}
+
+/* 🐱 แผ่นเพลงแมว */
+.disc{
+  width:180px;
+  height:180px;
+  border-radius:50%;
+  background:url("images.jpg") center/cover no-repeat;
+  margin:20px auto;
+  animation:spin linear infinite;   
+  animation-duration:8s; /* เริ่มหมุนช้า */
+  animation-play-state:paused;
+  box-shadow:0 10px 25px rgba(0,0,0,.25);
+}
+
+@keyframes spin{
+  to{transform:rotate(360deg)}
+}
+
+/* 🎛 Player */
+.player{
+  background:#fff;
+  border-radius:18px;
+  padding:15px;
+  margin-top:15px;
+}
+
+.controls{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:18px;
+  font-size:26px;
+}
+
+.controls span{
+  cursor:pointer;
+  user-select:none;
+}
+
+.progress{
+  margin-top:10px;
+}
+.progress input{
+  width:100%;
+}
+
+/* 🌸 ดอกไม้ลอย */
+.flower{
+  position:fixed;
+  bottom:-40px;
+  font-size:20px;
+  animation:float 6s linear forwards;
+}
+@keyframes float{
+  to{transform:translateY(-110vh);opacity:0}
+}
+
+/* 💗 หัวใจเด้ง */
+.heart{
+  position:absolute;
+  font-size:26px;
+  animation:pop 1s ease forwards;
+  pointer-events:none;
+}
+@keyframes pop{
+  0%{transform:scale(0);opacity:0}
+  40%{transform:scale(1.5);opacity:1}
+  100%{transform:translateY(-60px) scale(1);opacity:0}
+}
+
+/* 🌙 หน้าจอหรี่ตอนเพลงจบ */
+.dim{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.6);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  color:#fff;
+  font-size:18px;
+  text-align:center;
+  z-index:99;
+  animation:fadeIn 1.2s ease;
+}
+@keyframes fadeIn{
+  from{opacity:0}
+  to{opacity:1}
+}
+</style>
+</head>
+
+<body>
+<div class="container" id="app"></div>
+
+<audio id="song" src="song.mp3"></audio>
+
+<script>
+const app=document.getElementById("app");
+const song=document.getElementById("song");
+
+let step=0;
+let flowerTimer=null;
+
+const questions=[
+ "วันนี้เป็นยังไงบ้าง มีความสุขมั้ย 😊",
+ "วันนี้เจออะไรมาบ้าง เล่าให้ฟังได้นะ",
+ "วันนี้เหนื่อยมั้ย 🫶",
+ "ต้องการกำลังใจจากเรามั้ย",
+ "ไม่ว่าอะไรจะเกิดขึ้น เราอยู่ข้างๆนะ 💗"
+];
+
+start();
+
+function start(){
+ app.innerHTML=`
+  <div class="letter">
+    <h2>💌 จดหมายถึงเธอ</h2>
+    <button onclick="next()">เริ่มเลย</button>
+  </div>`;
+}
+
+function next(){
+ if(step>=questions.length){
+  musicPage();
+  return;
+ }
+ app.innerHTML=`
+  <div class="letter">
+    <h3>${questions[step]}</h3>
+    <button onclick="step++;next()">ตอบแล้ว</button>
+  </div>`;
+}
+
+function musicPage(){
+ app.innerHTML=`
+  <div class="letter">
+    <h3>เพลงนี้อยากให้ฟังนะ 🎧</h3>
+
+    <div class="disc" id="disc" onclick="togglePlay()"></div>
+
+    <div class="player">
+      <div class="controls">
+        <span onclick="seek(-5)">⏪</span>
+        <span onclick="togglePlay()" id="playBtn">▶️</span>
+        <span onclick="seek(5)">⏩</span>
+      </div>
+
+      <div class="progress">
+        <input type="range" min="0" value="0" id="bar">
+      </div>
+    </div>
+
+    <p>
+      เพลงนี้ไม่ต้องการอะไรจากคุณเลย<br>
+      แค่อยากให้คุณได้พัก<br>
+      อยู่ตรงนี้ได้เลยนะ 💗
+    </p>
+  </div>`;
+
+ const bar=document.getElementById("bar");
+ const disc=document.getElementById("disc");
+
+ song.ontimeupdate=()=>{
+  bar.max=song.duration;
+  bar.value=song.currentTime;
+
+  if(!song.paused){
+    disc.style.animationDuration="4s"; // เร็วขึ้นตอนเล่น
+  }
+ };
+
+ bar.oninput=()=>{
+  song.currentTime=bar.value;
+ };
+
+ song.onended=()=>{
+  stopFlowers();
+  disc.style.animationPlayState="paused";
+
+  const dim=document.createElement("div");
+  dim.className="dim";
+  dim.innerHTML=`
+    <div>
+      <p>วันนี้เก่งมากแล้วนะ 🌙</p>
+      <p>พักเถอะ เดี๋ยวพรุ่งนี้เราค่อยสู้ใหม่ 🐱💗</p>
+    </div>`;
+  document.body.appendChild(dim);
+ };
+}
+
+function togglePlay(){
+ const disc=document.getElementById("disc");
+ const btn=document.getElementById("playBtn");
+
+ popHeart();
+
+ if(song.paused){
+  song.play();
+  disc.style.animationPlayState="running";
+  disc.style.animationDuration="4s";
+  btn.textContent="⏸";
+  startFlowers();
+ }else{
+  song.pause();
+  disc.style.animationPlayState="paused";
+  disc.style.animationDuration="8s";
+  btn.textContent="▶️";
+  stopFlowers();
+ }
+}
+
+function seek(sec){
+ song.currentTime+=sec;
+}
+
+function startFlowers(){
+ if(flowerTimer) return;
+ flowerTimer=setInterval(()=>{
+  const f=document.createElement("div");
+  f.className="flower";
+  f.textContent="🌸";
+  f.style.left=Math.random()*100+"%";
+  document.body.appendChild(f);
+  setTimeout(()=>f.remove(),6000);
+ },600);
+}
+
+function stopFlowers(){
+ clearInterval(flowerTimer);
+ flowerTimer=null;
+}
+
+function popHeart(){
+ const disc=document.getElementById("disc");
+ const rect=disc.getBoundingClientRect();
+ const h=document.createElement("div");
+ h.className="heart";
+ h.textContent="💗";
+ h.style.left=rect.left+rect.width/2+"px";
+ h.style.top=rect.top+rect.height/2+"px";
+ document.body.appendChild(h);
+ setTimeout(()=>h.remove(),1000);
+}
+</script>
+</body>
+</html>
